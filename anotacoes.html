@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anotações</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f4f4f4;
+        }
+        .navbar {
+            width: 100%;
+            height: 45px;
+            background-color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .navbar ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        .navbar li {
+            margin: 0 15px;
+            transition: transform 0.3s ease;
+        }
+        .navbar li:hover {
+            transform: translateY(-3px);
+        }
+        .navbar a {
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 18px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .navbar a:hover {
+            background-color: #333;
+        }
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            margin: 30px 0;
+            color: #444;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            opacity: 0;
+            animation: fadeIn 1.5s 0.5s forwards;
+        }
+        .form-container {
+            margin-bottom: 30px;
+        }
+        .form-container input,
+        .form-container textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .form-container button {
+            width: 100%;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .form-container button:hover {
+            background-color: #333;
+            transform: translateY(-3px);
+        }
+        .note-list {
+            margin-top: 30px;
+        }
+        .note-item {
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .note-item h2 {
+            font-size: 22px;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .note-item p {
+            margin: 0;
+            line-height: 1.6;
+        }
+        .note-item button {
+            background-color: #e74c3c;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .note-item button:hover {
+            background-color: #c0392b;
+            transform: translateY(-3px);
+        }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+        <ul>
+            <li><a href="./index.html">Coletânea</a></li>
+            <li><a href="./legislação.html">Legislação</a></li>
+            <li><a href="./pendencias.html">Pendências</a></li>
+        </ul>
+    </div>
+
+    <h1>ANOTAÇÕES</h1>
+
+    <div class="content">
+        <div class="form-container">
+            <input type="text" id="note-title" placeholder="Título da Anotação" />
+            <textarea id="note-content" placeholder="Conteúdo da Anotação"></textarea>
+            <button onclick="saveNote()">Salvar Anotação</button>
+        </div>
+
+        <div id="note-list" class="note-list">
+            <!-- Anotações serão carregadas aqui -->
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getDatabase, ref, set, remove, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+        // Sua configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBCezhZMh9EQq8fppDB242lZbIbgaTk4eI",
+            authDomain: "almanaque-sfpc7.firebaseapp.com",
+            databaseURL: "https://almanaque-sfpc7-default-rtdb.firebaseio.com",
+            projectId: "almanaque-sfpc7",
+            storageBucket: "almanaque-sfpc7.appspot.com",
+            messagingSenderId: "1061209046781",
+            appId: "1:1061209046781:web:3cba4b9cdfa35dd6154894",
+            measurementId: "G-PCBG1JS43S"
+        };
+
+        // Inicializa o Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.saveNote = async function() {
+            const title = document.getElementById('note-title').value;
+            const content = document.getElementById('note-content').value;
+
+            if (title && content) {
+                try {
+                    const newNoteRef = ref(db, 'notes/' + Date.now());
+                    await set(newNoteRef, {
+                        title: title,
+                        content: content
+                    });
+                    console.log("Anotação salva com sucesso!");
+                    loadNotes();
+                    document.getElementById('note-title').value = '';
+                    document.getElementById('note-content').value = '';
+                } catch (e) {
+                    console.error("Erro ao salvar a anotação: ", e);
+                }
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        }
+
+        window.removeNote = async function(id) {
+            try {
+                await remove(ref(db, 'notes/' + id));
+                console.log("Anotação removida com sucesso!");
+                loadNotes();
+            } catch (e) {
+                console.error("Erro ao remover a anotação: ", e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadNotes();
+        });
+
+        async function loadNotes() {
+            const noteList = document.getElementById('note-list');
+            noteList.innerHTML = '';
+            try {
+                const notesRef = ref(db, 'notes');
+                onValue(notesRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        for (const id in data) {
+                            const note = data[id];
+                            noteList.innerHTML += `
+                                <div class="note-item">
+                                    <h2>${note.title}</h2>
+                                    <p>${note.content}</p>
+                                    <button onclick="removeNote('${id}')">Remover Anotação</button>
+                                </div>
+                            `;
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Erro ao carregar as anotações: ", e);
+            }
+        }
+    </script>
+
+</body>
+
+</html>

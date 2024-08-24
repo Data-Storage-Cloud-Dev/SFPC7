@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pessoa Jurídica</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            padding: 10px 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        header img {
+            width: 100%;
+            height: auto;
+            opacity: 0.7;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            transition: opacity 0.5s ease;
+        }
+        header:hover img {
+            opacity: 1;
+        }
+        header ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+        header li {
+            margin: 0 15px;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+        header li:hover {
+            transform: translateY(-5px);
+        }
+        header a {
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 18px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        header a:hover {
+            background-color: #333;
+        }
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            margin: 30px 0;
+            color: #444;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            opacity: 0;
+            animation: fadeIn 1.5s 0.5s forwards;
+        }
+        .form-container {
+            margin-bottom: 30px;
+        }
+        .form-container input,
+        .form-container textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .form-container button {
+            width: 100%;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .form-container button:hover {
+            background-color: #333;
+            transform: translateY(-3px);
+        }
+        .di-ex-item {
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 0;
+            opacity: 0;
+            animation: fadeInUp 0.5s forwards;
+        }
+        .di-ex-item h1 {
+            font-size: 22px;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .di-ex-item p {
+            margin: 8px 0;
+            line-height: 1.5;
+            color: #666;
+        }
+        .di-ex-item button {
+            background-color: #e74c3c;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .di-ex-item button:hover {
+            background-color: #c0392b;
+            transform: translateY(-3px);
+        }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getDatabase, ref, set, get, remove, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBCezhZMh9EQq8fppDB242lZbIbgaTk4eI",
+            authDomain: "almanaque-sfpc7.firebaseapp.com",
+            databaseURL: "https://almanaque-sfpc7-default-rtdb.firebaseio.com",
+            projectId: "almanaque-sfpc7",
+            storageBucket: "almanaque-sfpc7.appspot.com",
+            messagingSenderId: "1061209046781",
+            appId: "1:1061209046781:web:3cba4b9cdfa35dd6154894",
+            measurementId: "G-PCBG1JS43S"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.saveDIEx = async function() {
+            const title = document.getElementById('di-ex-title').value;
+            const subject = document.getElementById('di-ex-subject').value;
+            const content = document.getElementById('di-ex-content').value;
+
+            if (title && subject && content) {
+                try {
+                    const newDIExRef = ref(db, 'di-exs/' + Date.now());
+                    await set(newDIExRef, {
+                        title: title,
+                        subject: subject,
+                        content: content
+                    });
+                    console.log("DIEx salvo com sucesso!");
+                    loadDIExs();
+                    document.getElementById('di-ex-title').value = '';
+                    document.getElementById('di-ex-subject').value = '';
+                    document.getElementById('di-ex-content').value = '';
+                } catch (e) {
+                    console.error("Erro ao salvar o DIEx: ", e);
+                }
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        }
+
+        window.removeDIEx = async function(id) {
+            try {
+                await remove(ref(db, 'di-exs/' + id));
+                console.log("DIEx removido com sucesso!");
+                loadDIExs();
+            } catch (e) {
+                console.error("Erro ao remover o DIEx: ", e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadDIExs();
+        });
+
+        async function loadDIExs() {
+            const diExList = document.getElementById('di-ex-list');
+            diExList.innerHTML = '';
+            try {
+                const diExsRef = ref(db, 'di-exs');
+                onValue(diExsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        for (const id in data) {
+                            const diEx = data[id];
+                            diExList.innerHTML += `
+                                <div class="di-ex-item">
+                                    <h1>${diEx.title}</h1>
+                                    <p><strong>Assunto:</strong> ${diEx.subject}</p>
+                                    <p>${diEx.content}</p>
+                                    <button onclick="removeDIEx('${id}')">Remover DIEx</button>
+                                </div>
+                            `;
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Erro ao carregar DIExs: ", e);
+            }
+        }
+    </script>
+
+    <header>
+        <img src="DFPC.png" alt="Imagem do Exército Brasileiro">
+        <ul>
+            <li><a href="./legislação.html">Legislação</a></li>
+            <li><a href="./pendencias.html">Pendências</a></li>
+            <li><a href="./anotacoes.html">Anotações</a></li>
+        </ul>
+    </header>
+
+    <div class="content">
+        <h1>COLETÂNEA DE DIEX ORIUNDOS DA DFPC</h1>
+
+        <div class="form-container">
+            <input type="text" id="di-ex-title" placeholder="Título do DIEx" />
+            <input type="text" id="di-ex-subject" placeholder="Assunto do DIEx" />
+            <textarea id="di-ex-content" placeholder="Conteúdo do DIEx"></textarea>
+            <button onclick="saveDIEx()">Salvar DIEx</button>
+        </div>
+
+        <div id="di-ex-list"></div>
+    </div>
+
+</body>
+
+</html>
